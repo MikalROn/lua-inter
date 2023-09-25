@@ -1,0 +1,19 @@
+{
+    "name": "ata.rinha",
+    "expression": {
+      "kind": "Binary",
+      "lhs": {
+        "kind": "Int",
+        "value": 1,
+        "location": "null"
+      },
+      "op": "Add",
+      "rhs": {
+        "kind": "Int",
+        "value": 2,
+        "location":"null"
+      },
+      "location": "null"
+    },
+    "location": "null"
+  }
