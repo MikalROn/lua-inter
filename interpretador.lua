@@ -7,9 +7,6 @@ local function printTabela(tabela)
     end
 end
 
-local functions = {}
-local counter = 1
-
 Funcao = {}
 Funcao.__index = Funcao
 
@@ -17,24 +14,23 @@ function Funcao.new(param, value, context)
     local self = setmetatable({}, Funcao)
     self.key = tostring(self)
 
-    context[self.key] = {}
+    self.context = unpack({context})
+
+    self.parameters = {}
 
     for i, argument in ipairs(param) do
-        context[self.key][i] = argument.text
+        self.parameters[i] = argument.text
     end
 
     self.values = value
-
-    self.get_parameters = function () return context[self.key] end
-    self.parameters = self.get_parameters()
 
     return self
 end
 
 function Funcao:call(arguments, context)
-    local novo_contexto = {}
+    local novo_contexto = unpack({self.context})
     for i, argument in ipairs(arguments) do
-        local key = context[tostring(self)][i]
+        local key = self.parameters[i]
         novo_contexto[key] = interpreter(argument, context)
     end
     return interpreter(self.values, novo_contexto)
@@ -79,12 +75,11 @@ local Terms = {
         return {expression.value.first, expression.value.second}
     end,
     Binary = function(expression, context)
-        for i, item in pairs(context) do
-            print(i, item)
-        end
         local a = interpreter(expression.lhs, context)
         local b = interpreter(expression.rhs, context)
-        return operations[expression.op](a, b)
+        local calculo = operations[expression.op](a, b)
+        print(a, expression.op, b, " = ", calculo)
+        return calculo
     end,
     Print = function(expression, context)
         local val = interpreter(expression.value, context)
@@ -98,7 +93,8 @@ local Terms = {
         end
     end,
     Call = function(expression, context)
-        return context[expression.callee.text]:call(expression.arguments, context)
+        local func = interpreter(expression.callee, context)
+        return func:call(expression.arguments, context)
     end,
     If = function(expression, context)
             if interpreter(expression.condition, context) then
@@ -123,7 +119,7 @@ local Terms = {
 }
 
 function interpreter(expression, context)
-    print(expression.kind)
+    --print(expression.kind, expression.location.start, expression.location['end'])
     if Terms[expression.kind] ~= nil then
         return  Terms[expression.kind](expression, context)
     else
@@ -162,5 +158,5 @@ if data then
         print('Executando ...', data.name)    
         interpreter(data.expression, {__version__=10})
 else
-    print("Falha ao processar o arquivo JSON.")
+    print("Falha ao processar o arquivo Arvore!.")
 end
